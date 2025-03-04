@@ -1,5 +1,5 @@
 name: test
-on: [push]
+on: [pull_request, push]
 permissions:
   contents: write
   pull-requests: write
@@ -80,6 +80,7 @@ jobs:
           path: main.breakdown
           if-no-files-found: error
 
+      # Post coverage report as comment
       - name: find pull request ID
         run: |
           PR_DATA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
@@ -91,16 +92,25 @@ jobs:
           else
             echo "No open pull request found for this branch."
           fi
+      - name: find if coverage report is already present
+        if: env.pull_request_id
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ env.pull_request_id }}
+          comment-author: 'github-actions[bot]'
+          body-includes: 'go-test-coverage report:'
       - name: post coverage report
         if: env.pull_request_id
-        uses: thollander/actions-comment-pull-request@v3
+        uses: peter-evans/create-or-update-comment@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          comment-tag: coverage-report
-          pr-number: ${{ env.pull_request_id }}
-          message: |
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ env.pull_request_id }}
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          edit-mode: replace
+          body: |
             go-test-coverage report:
-            ``` 
+            ```
             ${{ fromJSON(steps.coverage.outputs.report) }}```
       
       - name: "finally check coverage"
