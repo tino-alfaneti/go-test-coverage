@@ -10,6 +10,7 @@
 ![go-test-coverage cover image](https://github.com/user-attachments/assets/2febc74e-7437-4dc6-87a4-0ca47f8e714e)
 
 `go-test-coverage` is a tool designed to report issues when test coverage falls below a specified threshold, ensuring higher code quality and preventing regressions in test coverage over time.
+This is a fork of it with improvements and support for lower versions on Go
 
 ## Why Use go-test-coverage?
 
